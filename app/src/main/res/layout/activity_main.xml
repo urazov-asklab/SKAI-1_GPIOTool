@@ -6,13 +6,125 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+    <Spinner
+        android:id="@+id/spinnerNumGPIO"
+        android:layout_width="164dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/checkBoxDirIn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewSelectGPIO"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewSelectGPIO"
+        android:layout_width="164dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="10dp"
+        android:text="Номер GPIO"
+        app:layout_constraintBottom_toTopOf="@+id/textViewDirection"
+        app:layout_constraintEnd_toStartOf="@+id/spinnerNumGPIO"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewDirection"
+        android:layout_width="164dp"
+        android:layout_height="76dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="10dp"
+        android:text="Направление GPIO"
+        app:layout_constraintBottom_toTopOf="@+id/textViewState"
+        app:layout_constraintEnd_toStartOf="@+id/checkBoxDirOut"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSelectGPIO" />
+
+    <CheckBox
+        android:id="@+id/checkBoxDirOut"
+        android:layout_width="164dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="10dp"
+        android:text="Вывод"
+        app:layout_constraintBottom_toTopOf="@+id/checkBoxStateHight"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewDirection"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxDirIn" />
+
+    <CheckBox
+        android:id="@+id/checkBoxDirIn"
+        android:layout_width="164dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="5dp"
+        android:text="Ввод"
+        app:layout_constraintBottom_toTopOf="@+id/checkBoxDirOut"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewDirection"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerNumGPIO" />
+
+    <CheckBox
+        android:id="@+id/checkBoxStateHight"
+        android:layout_width="164dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="5dp"
+        android:text="Высокий уровень"
+        app:layout_constraintBottom_toTopOf="@+id/checkBoxStateLow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewState"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxDirOut" />
+
+    <CheckBox
+        android:id="@+id/checkBoxStateLow"
+        android:layout_width="164dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="10dp"
+        android:text="Низкий уровень"
+        app:layout_constraintBottom_toTopOf="@+id/buttonUpdate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewState"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxStateHight" />
+
+    <TextView
+        android:id="@+id/textViewState"
+        android:layout_width="164dp"
+        android:layout_height="76dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginBottom="10dp"
+        android:text="Состояние"
+        app:layout_constraintBottom_toTopOf="@+id/buttonUpdate"
+        app:layout_constraintEnd_toStartOf="@+id/checkBoxStateHight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewDirection" />
+
+    <Button
+        android:id="@+id/buttonUpdate"
+        android:layout_width="271dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="70dp"
+        android:layout_marginBottom="250dp"
+        android:text="Обновить"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxStateLow" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
