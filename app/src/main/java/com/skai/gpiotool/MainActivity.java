@@ -1,9 +1,5 @@
 package com.skai.gpiotool;
 import androidx.appcompat.app.AppCompatActivity;
-//import androidx.core.content.ContextCompat;
-//import androidx.core.app.ActivityCompat;
-//import android.Manifest;
-//import android.content.pm.PackageManager;
 
 import android.os.Bundle;
 import android.view.View;
@@ -26,6 +22,8 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "GPIOTOOL";
+
     private Button   mButtonUpdate;
     private Spinner  mSpinnerNumGPIO;
     private CheckBox mCheckBoxDirIn;
@@ -33,12 +31,10 @@ public class MainActivity extends AppCompatActivity {
     private CheckBox mCheckBoxStateLow;
     private CheckBox mCheckBoxStateHight;
 
-    //private String pathDirGpio = "/sys/class/gpio/";
-    private String pathDirGpio = "/sdcard/gpio/";
-    private ArrayList<String> listGpio;
-    private String[] gpioDirections;
-    private String[] gpioStates;
-    private static final String TAG = "GPIOTOOL";
+    private String mPathDirGpio = "/sdcard/gpio/"; //"/sys/class/gpio/"
+    private ArrayList<String> mListGpio;
+    private String[] mGpioDirections;
+    private String[] mGpioStates;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,37 +48,28 @@ public class MainActivity extends AppCompatActivity {
         mCheckBoxStateLow   = (CheckBox) findViewById(R.id.checkBoxStateLow);
         mCheckBoxStateHight = (CheckBox) findViewById(R.id.checkBoxStateHight);
 
-        //int REQUEST_READ_EXTERNAL_STORAGE = 1;
-        //int REQUEST_WRITE_EXTERNAL_STORAGE = 2;
-        //if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-        //    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_READ_EXTERNAL_STORAGE);
-        //}
-        //if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-        //    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_STORAGE);
-        //}
-
         // prepare gpio
-        Log.i(TAG, "path: " + pathDirGpio);
-        File directory = new File(pathDirGpio);
+        Log.i(TAG, "path: " + mPathDirGpio);
+        File directory = new File(mPathDirGpio);
         File[] files = directory.listFiles();
-        listGpio = new ArrayList<String>();
+        mListGpio = new ArrayList<String>();
         Pattern pattern = Pattern.compile(".*gpio[0-9]{1}.*");
 
         for (int i = 0; i < files.length; i++) {
             if (pattern.matcher(files[i].getAbsolutePath()).matches()) {
-                //File file = new File(files[i].getAbsolutePath().concat("/value"));
-                //if (file.canWrite()) {
-                    listGpio.add(files[i].getAbsolutePath().replace(pathDirGpio, "").replace("/", ""));
-                //}
+                File file = new File(files[i].getAbsolutePath().concat("/value"));
+                if (file.canWrite()) {
+                    mListGpio.add(files[i].getAbsolutePath().replace(mPathDirGpio, "").replace("/", ""));
+                }
             }
         }
 
-        gpioDirections = new String[listGpio.size()];
-        gpioStates     = new String[listGpio.size()];
+        mGpioDirections = new String[mListGpio.size()];
+        mGpioStates     = new String[mListGpio.size()];
 
         // prepare spinner
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, listGpio);
+                android.R.layout.simple_spinner_item, mListGpio);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerNumGPIO.setAdapter(adapter);
         mSpinnerNumGPIO.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -156,11 +143,11 @@ public class MainActivity extends AppCompatActivity {
 
     protected void updatedData() {
         // update gpio direction
-        for (int i = 0; i < listGpio.size(); i++) {
+        for (int i = 0; i < mListGpio.size(); i++) {
             try {
-                RandomAccessFile file = new RandomAccessFile(pathDirGpio.concat(listGpio.get(i).concat("/direction")), "r");
-                gpioDirections[i] = file.readLine();
-                Log.i(TAG, "direction: " + pathDirGpio.concat(listGpio.get(i).concat("/direction")) + " " + gpioDirections[i]);
+                RandomAccessFile file = new RandomAccessFile(mPathDirGpio.concat(mListGpio.get(i).concat("/direction")), "r");
+                mGpioDirections[i] = file.readLine();
+                Log.i(TAG, "direction: " + mPathDirGpio.concat(mListGpio.get(i).concat("/direction")) + " " + mGpioDirections[i]);
                 file.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -170,11 +157,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // update state gpio
-        for (int i = 0; i < listGpio.size(); i++) {
+        for (int i = 0; i < mListGpio.size(); i++) {
             try {
-                RandomAccessFile file = new RandomAccessFile(pathDirGpio.concat(listGpio.get(i).concat("/value")), "r");
-                gpioStates[i] = file.readLine();
-                Log.i(TAG, "value: " + pathDirGpio.concat(listGpio.get(i).concat("/value")) + " " + gpioStates[i]);
+                RandomAccessFile file = new RandomAccessFile(mPathDirGpio.concat(mListGpio.get(i).concat("/value")), "r");
+                mGpioStates[i] = file.readLine();
+                Log.i(TAG, "value: " + mPathDirGpio.concat(mListGpio.get(i).concat("/value")) + " " + mGpioStates[i]);
                 file.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -189,14 +176,14 @@ public class MainActivity extends AppCompatActivity {
         int id = mSpinnerNumGPIO.getSelectedItemPosition();
 
         // update check boxes direction
-        mCheckBoxDirOut.setChecked(gpioDirections[id].equals("out"));
-        mCheckBoxDirIn.setChecked(gpioDirections[id].equals("in"));
+        mCheckBoxDirOut.setChecked(mGpioDirections[id].equals("out"));
+        mCheckBoxDirIn.setChecked(mGpioDirections[id].equals("in"));
 
         // update check boxes state
-        mCheckBoxStateHight.setChecked(gpioStates[id].equals("1"));
-        mCheckBoxStateLow.setChecked(gpioStates[id].equals("0"));
-        mCheckBoxStateHight.setClickable(gpioDirections[id].equals("out"));
-        mCheckBoxStateLow.setClickable(gpioDirections[id].equals("out"));
+        mCheckBoxStateHight.setChecked(mGpioStates[id].equals("1"));
+        mCheckBoxStateLow.setChecked(mGpioStates[id].equals("0"));
+        mCheckBoxStateHight.setClickable(mGpioDirections[id].equals("out"));
+        mCheckBoxStateLow.setClickable(mGpioDirections[id].equals("out"));
     }
 
     protected void setGpioDirection(String direction) {
@@ -204,9 +191,9 @@ public class MainActivity extends AppCompatActivity {
         int id = mSpinnerNumGPIO.getSelectedItemPosition();
         // set data
         try {
-            FileOutputStream file = new FileOutputStream(pathDirGpio.concat(listGpio.get(id).concat("/direction")));
+            FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(id).concat("/direction")));
             file.write(direction.getBytes(), 0, direction.length());
-            gpioStates[id] = direction;
+            mGpioStates[id] = direction;
             file.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -220,9 +207,9 @@ public class MainActivity extends AppCompatActivity {
         int id = mSpinnerNumGPIO.getSelectedItemPosition();
         // set data
         try {
-            FileOutputStream file = new FileOutputStream(pathDirGpio.concat(listGpio.get(id).concat("/value")));
+            FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(id).concat("/value")));
             file.write(state.getBytes(), 0, state.length());
-            gpioStates[id] = state;
+            mGpioStates[id] = state;
             file.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
