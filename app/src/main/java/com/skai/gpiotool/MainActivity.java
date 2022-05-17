@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private Spinner  mSpinnerNumGPIO;
 
     private String mPathDirGpio = "/sdcard/gpio/"; //"/sys/class/gpio/"
+    private ArrayList<String> mListLabelGpio;
     private ArrayList<String> mListGpio;
     private String[] mGpioDirections;
     private String[] mGpioStates;
@@ -45,18 +46,32 @@ public class MainActivity extends AppCompatActivity {
         mButtonDirection = (Button)  findViewById(R.id.buttonDirection);
         mSpinnerNumGPIO  = (Spinner) findViewById(R.id.spinnerNumGPIO);
 
+        // prepare list
+        mListGpio       = new ArrayList<String>();
+        mListLabelGpio  = new ArrayList<String>();
+
         // prepare gpio
         Log.i(TAG, "path: " + mPathDirGpio);
         File directory  = new File(mPathDirGpio);
         File[] files    = directory.listFiles();
-        mListGpio       = new ArrayList<String>();
         Pattern pattern = Pattern.compile(".*gpio[0-9]{1}.*");
 
         for (int i = 0; i < files.length; i++) {
             if (pattern.matcher(files[i].getAbsolutePath()).matches()) {
                 File file = new File(files[i].getAbsolutePath().concat("/value"));
                 if (file.canWrite()) {
-                    mListGpio.add(files[i].getAbsolutePath().replace(mPathDirGpio, "").replace("/", ""));
+                    String nameGpio = files[i].getAbsolutePath().replace(mPathDirGpio, "").replace("/", "");
+                    mListGpio.add(nameGpio);
+                    if (nameGpio.equals("gpio14"))      mListLabelGpio.add("DISCR_INP_1_CTRL");
+                    else if (nameGpio.equals("gpio56")) mListLabelGpio.add("DISCR_INP_2_CTRL");
+                    else if (nameGpio.equals("gpio28")) mListLabelGpio.add("DISCR_OUT_CTRL");
+                    else if (nameGpio.equals("gpio55")) mListLabelGpio.add("LED_RED");
+                    else if (nameGpio.equals("gpio53")) mListLabelGpio.add("LED_GREEN");
+                    else if (nameGpio.equals("gpio52")) mListLabelGpio.add("BUTTON_ALARM");
+                    else if (nameGpio.equals("gpio30")) mListLabelGpio.add("BUTTON_RESET");
+                    else if (nameGpio.equals("gpio73")) mListLabelGpio.add("5V0_UVC_EN");
+                    else if (nameGpio.equals("gpio74")) mListLabelGpio.add("AUDIO_OUT_EN");
+                    else                                mListLabelGpio.add(nameGpio);
                 }
             }
         }
@@ -66,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         // prepare spinner
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_item, mListGpio);
+                android.R.layout.simple_spinner_item, mListLabelGpio);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinnerNumGPIO.setAdapter(adapter);
         mSpinnerNumGPIO.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
