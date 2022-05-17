@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(mCurrentGpioID).concat("/direction")));
             file.write(direction.getBytes(), 0, direction.length());
-            mGpioStates[mCurrentGpioID] = direction;
+            mGpioDirections[mCurrentGpioID] = direction;
             file.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
