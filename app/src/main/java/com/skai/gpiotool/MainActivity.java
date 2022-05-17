@@ -47,9 +47,9 @@ public class MainActivity extends AppCompatActivity {
 
         // prepare gpio
         Log.i(TAG, "path: " + mPathDirGpio);
-        File directory = new File(mPathDirGpio);
-        File[] files = directory.listFiles();
-        mListGpio = new ArrayList<String>();
+        File directory  = new File(mPathDirGpio);
+        File[] files    = directory.listFiles();
+        mListGpio       = new ArrayList<String>();
         Pattern pattern = Pattern.compile(".*gpio[0-9]{1}.*");
 
         for (int i = 0; i < files.length; i++) {
@@ -77,8 +77,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
         // update data gpios
