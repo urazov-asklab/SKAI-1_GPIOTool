@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.AdapterView;
 
@@ -25,28 +24,26 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "GPIOTOOL";
 
     private Button   mButtonUpdate;
+    private Button   mButtonValue;
+    private Button   mButtonDirection;
     private Spinner  mSpinnerNumGPIO;
-    private CheckBox mCheckBoxDirIn;
-    private CheckBox mCheckBoxDirOut;
-    private CheckBox mCheckBoxStateLow;
-    private CheckBox mCheckBoxStateHight;
 
     private String mPathDirGpio = "/sdcard/gpio/"; //"/sys/class/gpio/"
     private ArrayList<String> mListGpio;
     private String[] mGpioDirections;
     private String[] mGpioStates;
 
+    private int mCurrentGpioID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mButtonUpdate       = (Button)   findViewById(R.id.buttonUpdate);
-        mSpinnerNumGPIO     = (Spinner)  findViewById(R.id.spinnerNumGPIO);
-        mCheckBoxDirIn      = (CheckBox) findViewById(R.id.checkBoxDirIn);
-        mCheckBoxDirOut     = (CheckBox) findViewById(R.id.checkBoxDirOut);
-        mCheckBoxStateLow   = (CheckBox) findViewById(R.id.checkBoxStateLow);
-        mCheckBoxStateHight = (CheckBox) findViewById(R.id.checkBoxStateHight);
+        mButtonUpdate    = (Button)  findViewById(R.id.buttonUpdate);
+        mButtonValue     = (Button)  findViewById(R.id.buttonValue);
+        mButtonDirection = (Button)  findViewById(R.id.buttonDirection);
+        mSpinnerNumGPIO  = (Spinner) findViewById(R.id.spinnerNumGPIO);
 
         // prepare gpio
         Log.i(TAG, "path: " + mPathDirGpio);
@@ -75,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         mSpinnerNumGPIO.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mCurrentGpioID = (int)id;
                 updatedView();
             }
 
@@ -87,58 +85,33 @@ public class MainActivity extends AppCompatActivity {
         updatedData();
         updatedView();
 
-        // prepare check boxes direction
-        mCheckBoxDirIn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                setGpioDirection(isChecked ? "in" : "out");
-                mCheckBoxDirOut.setChecked(!mCheckBoxDirIn.isChecked());
-                mCheckBoxStateHight.setClickable(mCheckBoxDirOut.isChecked());
-                mCheckBoxStateLow.setClickable(mCheckBoxDirOut.isChecked());
-                mCheckBoxStateHight.setClickable(mCheckBoxDirOut.isChecked());
-                mCheckBoxStateLow.setClickable(mCheckBoxDirOut.isChecked());
-            }
-        });
-
-        mCheckBoxDirOut.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                setGpioDirection(isChecked ? "out" : "in");
-                mCheckBoxDirIn.setChecked(!mCheckBoxDirOut.isChecked());
-                mCheckBoxStateHight.setClickable(mCheckBoxDirOut.isChecked());
-                mCheckBoxStateLow.setClickable(mCheckBoxDirOut.isChecked());
-                mCheckBoxStateHight.setClickable(mCheckBoxDirOut.isChecked());
-                mCheckBoxStateLow.setClickable(mCheckBoxDirOut.isChecked());
-            }
-        });
-
-        // prepare check boxes state
-        mCheckBoxStateLow.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                setGpioState(isChecked ? "0" : "1");
-                mCheckBoxStateHight.setChecked(!isChecked);
-            }
-        });
-
-        mCheckBoxStateHight.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                setGpioState(isChecked ? "1" : "0");
-                mCheckBoxStateLow.setChecked(!isChecked);
-            }
-        });
-
-
         // prepare button
-        View.OnClickListener clickButtonUpdate = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updatedData();
-                updatedView();
+        mButtonValue.setOnClickListener(v -> {
+            if (mGpioStates[mCurrentGpioID].equals("1")) {
+                setGpioState("0");
+                mButtonValue.setText("Low");
             }
-        };
-        mButtonUpdate.setOnClickListener(clickButtonUpdate);
+            else {
+                setGpioState("1");
+                mButtonValue.setText("High");
+            }
+        });
+
+        mButtonDirection.setOnClickListener(v -> {
+            if (mGpioDirections[mCurrentGpioID].equals("out")) {
+                setGpioDirection("in");
+                mButtonDirection.setText("Input");
+            }
+            else {
+                setGpioDirection("out");
+                mButtonDirection.setText("Output");
+            }
+        });
+
+        mButtonUpdate.setOnClickListener(v -> {
+            updatedData();
+            updatedView();
+        });
     }
 
     protected void updatedData() {
@@ -172,28 +145,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void updatedView() {
-        // get current gpio
-        int id = mSpinnerNumGPIO.getSelectedItemPosition();
-
         // update check boxes direction
-        mCheckBoxDirOut.setChecked(mGpioDirections[id].equals("out"));
-        mCheckBoxDirIn.setChecked(mGpioDirections[id].equals("in"));
+        if (mGpioDirections[mCurrentGpioID].equals("out"))
+            mButtonDirection.setText("Output");
+        else
+            mButtonDirection.setText("Input");
 
         // update check boxes state
-        mCheckBoxStateHight.setChecked(mGpioStates[id].equals("1"));
-        mCheckBoxStateLow.setChecked(mGpioStates[id].equals("0"));
-        mCheckBoxStateHight.setClickable(mGpioDirections[id].equals("out"));
-        mCheckBoxStateLow.setClickable(mGpioDirections[id].equals("out"));
+        if (mGpioStates[mCurrentGpioID].equals("1"))
+            mButtonValue.setText("High");
+        else
+            mButtonValue.setText("Low");
     }
 
     protected void setGpioDirection(String direction) {
-        // get current gpio
-        int id = mSpinnerNumGPIO.getSelectedItemPosition();
         // set data
         try {
-            FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(id).concat("/direction")));
+            FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(mCurrentGpioID).concat("/direction")));
             file.write(direction.getBytes(), 0, direction.length());
-            mGpioStates[id] = direction;
+            mGpioStates[mCurrentGpioID] = direction;
             file.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -203,13 +173,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void setGpioState(String state) {
-        // get current gpio
-        int id = mSpinnerNumGPIO.getSelectedItemPosition();
         // set data
         try {
-            FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(id).concat("/value")));
+            FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(mCurrentGpioID).concat("/value")));
             file.write(state.getBytes(), 0, state.length());
-            mGpioStates[id] = state;
+            mGpioStates[mCurrentGpioID] = state;
             file.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
