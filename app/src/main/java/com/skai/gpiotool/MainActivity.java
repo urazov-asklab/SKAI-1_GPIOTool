@@ -98,10 +98,18 @@ public class MainActivity extends AppCompatActivity {
         mSpinnerNumGPIO.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (mThreadReadValue != null && mThreadReadValue.isAlive()) {
+                    mReading = false;
+                    while (mThreadReadValue.isAlive());
+                }
                 mCurrentGpioID = (int)id;
                 getGpioState();
                 getGpioDirection();
                 updatedView();
+                if (mGpioDirections[mCurrentGpioID].equals("in")) {
+                    mThreadReadValue = new Thread(mTaskReadValue);
+                    mThreadReadValue.start();
+                }
             }
 
             @Override
@@ -125,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
         mTaskReadValue = () -> {
             String oldGpioState = mGpioStates[mCurrentGpioID];
+            mReading = true;
             while (mReading) {
                 getGpioState();
                 if (!mGpioStates[mCurrentGpioID].equals(oldGpioState)) {
@@ -138,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            mReading = true;
         };
         if (mGpioDirections[mCurrentGpioID].equals("in")) {
             mThreadReadValue = new Thread(mTaskReadValue);
@@ -167,7 +175,10 @@ public class MainActivity extends AppCompatActivity {
 
         mButtonDirection.setOnClickListener(v -> {
             if (mGpioDirections[mCurrentGpioID].equals("out")) {
-                while (!mReading);
+                if (mThreadReadValue != null && mThreadReadValue.isAlive()) {
+                    mReading = false;
+                    while (mThreadReadValue.isAlive());
+                }
                 mThreadReadValue = new Thread(mTaskReadValue);
                 mThreadReadValue.start();
 
