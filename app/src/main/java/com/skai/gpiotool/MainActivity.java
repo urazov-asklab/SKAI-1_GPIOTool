@@ -29,7 +29,6 @@ import java.lang.Thread;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "GPIOTOOL";
 
-    private Button   mButtonUpdate;
     private Button   mButtonValue;
     private Button   mButtonDirection;
     private Spinner  mSpinnerNumGPIO;
@@ -54,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mButtonUpdate    = (Button)  findViewById(R.id.buttonUpdate);
         mButtonValue     = (Button)  findViewById(R.id.buttonValue);
         mButtonDirection = (Button)  findViewById(R.id.buttonDirection);
         mSpinnerNumGPIO  = (Spinner) findViewById(R.id.spinnerNumGPIO);
@@ -101,6 +99,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mCurrentGpioID = (int)id;
+                getGpioState();
+                getGpioDirection();
                 updatedView();
             }
 
@@ -181,11 +181,6 @@ public class MainActivity extends AppCompatActivity {
                 mButtonDirection.setText("Output");
             }
         });
-
-        mButtonUpdate.setOnClickListener(v -> {
-            updatedData();
-            updatedView();
-        });
     }
 
     protected void updatedData() {
@@ -252,6 +247,18 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(mCurrentGpioID).concat("/value")));
             file.write(state.getBytes(), 0, state.length());
             mGpioStates[mCurrentGpioID] = state;
+            file.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void getGpioDirection() {
+        try {
+            RandomAccessFile file = new RandomAccessFile(mPathDirGpio.concat(mListGpio.get(mCurrentGpioID).concat("/direction")), "r");
+            mGpioDirections[mCurrentGpioID] = file.readLine();
             file.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
