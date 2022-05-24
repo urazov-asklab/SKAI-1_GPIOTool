@@ -8,6 +8,7 @@ import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import java.io.File;
 
@@ -35,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private String[] mGpioStates;
 
     private int mCurrentGpioID;
+
+    private Toast mToast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,13 +104,21 @@ public class MainActivity extends AppCompatActivity {
 
         // prepare button
         mButtonValue.setOnClickListener(v -> {
-            if (mGpioStates[mCurrentGpioID].equals("1")) {
-                setGpioState("0");
-                mButtonValue.setText("Low");
+            if (mGpioDirections[mCurrentGpioID].equals("out")) {
+                if (mGpioStates[mCurrentGpioID].equals("1")) {
+                    setGpioState("0");
+                    mButtonValue.setText("Low");
+                }
+                else {
+                    setGpioState("1");
+                    mButtonValue.setText("High");
+                }
             }
             else {
-                setGpioState("1");
-                mButtonValue.setText("High");
+                if (mToast != null)
+                    mToast.cancel();
+                mToast = Toast.makeText(getApplicationContext(), "GPIO настроено на ввод", Toast.LENGTH_SHORT);
+                mToast.show();
             }
         });
 
