@@ -21,6 +21,11 @@ import java.io.RandomAccessFile;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
+import android.os.Handler;
+import android.os.Message;
+
+import java.lang.Thread;
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "GPIOTOOL";
 
@@ -38,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
     private int mCurrentGpioID;
 
     private Toast mToast;
+
+    private boolean mReading = true;
+    private Runnable mTaskReadValue;
+    private Thread mThreadReadValue;
+    private Handler mHandlerReadValue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +112,39 @@ public class MainActivity extends AppCompatActivity {
         updatedData();
         updatedView();
 
+        // prepare thread
+        mHandlerReadValue = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                if (mGpioStates[mCurrentGpioID].equals("1"))
+                    mButtonValue.setText("High");
+                else
+                    mButtonValue.setText("Low");
+            }
+        };
+
+        mTaskReadValue = () -> {
+            String oldGpioState = mGpioStates[mCurrentGpioID];
+            while (mReading) {
+                getGpioState();
+                if (!mGpioStates[mCurrentGpioID].equals(oldGpioState)) {
+                    oldGpioState = mGpioStates[mCurrentGpioID];
+                    mHandlerReadValue.sendEmptyMessage(0);
+                }
+                try {
+                    Thread.sleep(200);
+                }
+                catch(InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            mReading = true;
+        };
+        if (mGpioDirections[mCurrentGpioID].equals("in")) {
+            mThreadReadValue = new Thread(mTaskReadValue);
+            mThreadReadValue.start();
+        }
+
         // prepare button
         mButtonValue.setOnClickListener(v -> {
             if (mGpioDirections[mCurrentGpioID].equals("out")) {
@@ -124,10 +167,16 @@ public class MainActivity extends AppCompatActivity {
 
         mButtonDirection.setOnClickListener(v -> {
             if (mGpioDirections[mCurrentGpioID].equals("out")) {
+                while (!mReading);
+                mThreadReadValue = new Thread(mTaskReadValue);
+                mThreadReadValue.start();
+
                 setGpioDirection("in");
                 mButtonDirection.setText("Input");
             }
             else {
+                mReading = false;
+
                 setGpioDirection("out");
                 mButtonDirection.setText("Output");
             }
@@ -203,6 +252,18 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream file = new FileOutputStream(mPathDirGpio.concat(mListGpio.get(mCurrentGpioID).concat("/value")));
             file.write(state.getBytes(), 0, state.length());
             mGpioStates[mCurrentGpioID] = state;
+            file.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void getGpioState() {
+        try {
+            RandomAccessFile file = new RandomAccessFile(mPathDirGpio.concat(mListGpio.get(mCurrentGpioID).concat("/value")), "r");
+            mGpioStates[mCurrentGpioID] = file.readLine();
             file.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
